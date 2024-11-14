@@ -16,6 +16,7 @@ betaa = 2.0
 A = 10
 tau_min = 0.1
 tau_max = 10.0
+step_size = 0.3
 Degrees = 360
 
 pheromones = [tau_max] * Degrees
@@ -87,8 +88,8 @@ def run(prob: Problem):
         for i in range(1, num_ants):
             dre = selectDegree(ants[i - 1])
 
-            ants[i].x += math.cos(dre * math.pi / 180.0) * 0.1
-            ants[i].y += math.sin(dre * math.pi / 180.0) * 0.1
+            ants[i].x += math.cos(dre * math.pi / 180.0) * step_size
+            ants[i].y += math.sin(dre * math.pi / 180.0) * step_size
             ants[i].result = prob.fitness(ants[i].pos())
 
             if ants[i].result < MaxIter.result:
