@@ -7,7 +7,7 @@ from opti_functions import all_functions
 algorithms_folder = 'algorithms'
 results = {}
 
-print("Running each algorithm with TL of 3 seconds:")
+print("Running each algorithm with TL of 10 seconds:")
 print("-----------------")
 
 for function_name, (fitness_func, LIMIT, EV) in all_functions.items():
@@ -17,7 +17,7 @@ for function_name, (fitness_func, LIMIT, EV) in all_functions.items():
             module = importlib.import_module(f'{algorithms_folder}.{module_name}')
             if hasattr(module, 'DIMENSION') and module.DIMENSION != len(LIMIT):
                 continue
-            prob = Problem(fitness_func, LIMIT, EV, 3)
+            prob = Problem(fitness_func, LIMIT, EV, 10)
             module.run(prob)
             results[module_name] = round(prob.best_solution[0], 4)
 
