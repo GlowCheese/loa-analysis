@@ -2,21 +2,22 @@ import time
 import math
 import random
 
+from math import pi
 from enum import Enum
-from math import pi, e
 
 from problem import Problem, INF
 
 N_pop = 3000
 P = 50
 
-NOM_rate = 0.4
+NOM_rate = 0.3
 FEM_rate = 0.7
-HUNT_rate = 0.6
+HUNT_rate = 0.7
 ROAM_rate = 0.5
-MATE_rate = 0.4
-MUTA_rate = 0.6
-IMMI_rate = 0.4
+MATE_rate = 0.2
+MUTA_rate = 0.3
+IMMI_rate = 0.2
+DISS_rate = 0.02
 
 prob: Problem = None
 
@@ -53,6 +54,9 @@ class Lion:
         else:
             self.improved_last_iter = False
 
+    def __str__(self):
+        return f"{self.best_fitness} at position({', '.join(map(str, self.position))})"
+
 
 prides: list[dict[Gender, list[Lion]]] = []
 nomads: dict[Gender, list[Lion]] = {Gender.MALE: [], Gender.FEMALE: []}
@@ -74,7 +78,8 @@ def initialize_population():
     m = len(unalocated)
     for i in range(P):
         sz = (i+1)*m//P - i*m//P
-        male_sz = max(2, int(random.normalvariate(sz*(1-FEM_rate), 1) + 0.5))
+        male_sz = max(2, int(random.gauss(sz*(1-FEM_rate), 1)))
+
         prides.append({Gender.MALE: [], Gender.FEMALE: []})
         for _ in range(male_sz):
             prides[i][Gender.MALE].append(unalocated.pop())
@@ -87,16 +92,18 @@ new_born = [0] * P
 class Behaviour:
     @staticmethod
     def _move_toward(lion: Lion, dest: list[float], angle: float = pi/2 - pi/1024):
-        buff: float = random.uniform(0, 2)
+        buff = random.uniform(0, 2)
         for p in range(prob.N_var):
-            x: float = buff * (dest[p] - lion.position[p])
-            lion.position[p] += x * math.tan(random.uniform(-angle, angle))
+            x = math.tan(random.uniform(-angle, angle))
+            lion.position[p] += buff * (dest[p] - lion.position[p] + x)
+        lion.self_improve()
 
 
     @staticmethod
     def _hunting(prey: list[float], hunters: list[tuple[Lion, Wing]]):
         for lion, wing in hunters:
             for p in range(prob.N_var):
+                prey[p] += 2 * math.tan(random.uniform(-pi/6, pi/6))
                 if wing == Wing.CENTER:
                     lion.position[p] = random.uniform(
                         min(lion.position[p], prey[p]),
@@ -104,30 +111,30 @@ class Behaviour:
                     )
                 else:
                     lion.position[p] = random.uniform(
-                        min(prey[p], 2 * prey[p] - lion.position[p]),
-                        max(prey[p], 2 * prey[p] - lion.position[p])
+                        min(prey[p], 2*prey[p] - lion.position[p]),
+                        max(prey[p], 2*prey[p] - lion.position[p])
                     )
 
             improvement_percentage = lion.self_improve()
             if improvement_percentage is not None:
-                intensity: float = random.uniform(0, improvement_percentage)
+                intensity = random.uniform(0, improvement_percentage)
                 for p in range(prob.N_var):
                     prey[p] += intensity * (prey[p] - lion.position[p])
 
 
     @staticmethod
     def _fleeing(pride_id: int, fleers: list[Lion]):
-        success_count = sum(1 for lion in fleers if lion.improved_last_iter)
+        success_count = sum(lion.improved_last_iter for lion in fleers)
         tournament_size = max(2, (success_count + 1) // 2)
 
-        females = prides[pride_id][Gender.FEMALE]
         males = prides[pride_id][Gender.MALE]
-        _fem_size: int = len(females)
+        females = prides[pride_id][Gender.FEMALE]
+        _fem_size = len(females)
 
         for lion in fleers:
             target: Lion = None
             for _ in range(tournament_size):
-                r = random.randint(0, len(females) + len(males) - 1)
+                r = random.randrange(pride_size(pride_id))
                 chosen = females[r] if r < _fem_size else males[r - _fem_size]
 
                 if target is None or chosen.best_fitness < target.best_fitness:
@@ -135,7 +142,6 @@ class Behaviour:
 
             for p in range(prob.N_var):
                 Behaviour._move_toward(lion, target.position)
-                lion.self_improve()
 
 
     @staticmethod
@@ -143,11 +149,11 @@ class Behaviour:
         for i in range(P):
             fleers: list[Lion] = []
             hunters: list[tuple[Lion, str]] = []
-            prey: list[float] = [0] * prob.N_var
+            prey: list[float] = [0.0] * prob.N_var
 
             for lion in prides[i][Gender.FEMALE]:
                 if random.random() <= HUNT_rate:
-                    wing: str = random.choice(list(Wing))
+                    wing = random.choice(list(Wing))
                     hunters.append((lion, wing))
                     for p in range(prob.N_var):
                         prey[p] += lion.position[p]
@@ -156,9 +162,10 @@ class Behaviour:
 
             if hunters:
                 prey = [p / len(hunters) for p in prey]
+                Behaviour._hunting(prey, hunters)
 
-            Behaviour._hunting(prey, hunters)
-            Behaviour._fleeing(i, fleers)
+            if fleers:
+                Behaviour._fleeing(i, fleers)
 
 
     @staticmethod
@@ -167,20 +174,22 @@ class Behaviour:
             _fem_size = len(prides[i][Gender.FEMALE])
             for lion in prides[i][Gender.MALE]:
                 for _ in range(int(pride_size(i) * ROAM_rate)):
-                    r = random.randint(0, pride_size(i) - 1)
+                    r = random.randrange(pride_size(i))
                     if r < _fem_size:
                         Behaviour._move_toward(lion, prides[i][Gender.FEMALE][r].position, pi/6)
                     else:
                         Behaviour._move_toward(lion, prides[i][Gender.MALE][r - _fem_size].position, pi/6)
-                    lion.self_improve()
 
-        best_nomad = INF
-        for lion in nomads[Gender.FEMALE] + nomads[Gender.MALE]:
-            best_nomad = min(best_nomad, prob.fitness(lion.position))
+        best_nomad = min(
+            min(prob.fitness(lion.position) for lion in nomads[Gender.MALE]),
+            min(prob.fitness(lion.position) for lion in nomads[Gender.FEMALE])
+        )
 
-        for lion in nomads[Gender.FEMALE] + nomads[Gender.MALE]:
+        _fem_size = len(nomads[Gender.FEMALE])
+        for j in range(nomad_size()):
+            lion = nomads[Gender.FEMALE][j] if j < _fem_size else nomads[Gender.MALE][j-_fem_size]
             pr = 0.1 + min(0.5, PoI(prob.fitness(lion.position), best_nomad))
-            if random.random() > pr:
+            if random.random() < pr:
                 lion.position = prob.random_solution()
                 lion.self_improve()
 
@@ -188,8 +197,7 @@ class Behaviour:
     @staticmethod
     def _breed(female: Lion, males: list[Lion], pride: dict[Gender, list[Lion]]):
         beta = random.gauss(0.5, 0.1)
-        off_1 = Lion()
-        off_2 = Lion()
+        off_1, off_2 = Lion(), Lion()
 
         for p in range(prob.N_var):
             sum_positions = sum(male.position[p] for male in males)
@@ -234,11 +242,10 @@ class Behaviour:
                 Behaviour._breed(female, males, prides[i])
 
         for j in range(len(nomads[Gender.FEMALE]) - 1, -1, -1):
-            if random.random() > MATE_rate:
-                continue
+            if random.random() > MATE_rate: continue
             assert nomads[Gender.MALE], "No males available"
             female = nomads[Gender.FEMALE][j]
-            r = random.randint(0, len(nomads[Gender.MALE]) - 1)
+            r = random.randrange(len(nomads[Gender.MALE]))
             males = [nomads[Gender.MALE][r]]
             Behaviour._breed(female, males, nomads)
 
@@ -252,19 +259,18 @@ class Behaviour:
                 new_born[i] -= 1
 
         for k in range(len(nomads[Gender.MALE])):
-            ok = False
             for i in range(P):
-                if random.random() > 0.5:
-                    continue
-                for j in range(len(prides[i][Gender.MALE]) - 1, -1, -1):
-                    if nomads[Gender.MALE][k].best_fitness < prides[i][Gender.MALE][j].best_fitness:
-                        nomads[Gender.MALE].append(prides[i][Gender.MALE][j])
-                        prides[i][Gender.MALE].append(nomads[Gender.MALE][k])
-                        nomads[Gender.MALE].pop(k)
-                        prides[i][Gender.MALE].pop(j)
-                        ok = True
-                        break
-                if ok: break
+                if random.random() > 0.5: continue
+                u = len(prides[i][Gender.MALE]) - 1
+                if nomads[Gender.MALE][k].best_fitness < prides[i][Gender.MALE][u].best_fitness:
+                    prides[i][Gender.MALE].append(nomads[Gender.MALE][k])
+                    nomads[Gender.MALE][k] = prides[i][Gender.MALE].pop(u)
+                    while u > 0 and prides[i][Gender.MALE][u].best_fitness < prides[i][Gender.MALE][u - 1].best_fitness:
+                        temp = prides[i][Gender.MALE][u]
+                        prides[i][Gender.MALE][u] = prides[i][Gender.MALE][u-1]
+                        prides[i][Gender.MALE][u-1] = temp
+                        u -= 1
+                    break
 
 
     @staticmethod
@@ -289,14 +295,24 @@ class Behaviour:
 
     @staticmethod
     def equilibrium():
-        lim = {Gender.MALE: int(N_pop * NOM_rate * FEM_rate), Gender.FEMALE: int(N_pop * NOM_rate * (1 - FEM_rate))}
-
-        for gender in [Gender.MALE, Gender.FEMALE]:
-            nomads[gender].sort(key=lambda u: u.best_fitness)
+        lim = {
+            Gender.MALE: int(N_pop * NOM_rate * FEM_rate),
+            Gender.FEMALE: int(N_pop * NOM_rate * (1 - FEM_rate))
+        }
+        for gender in list(Gender):
             if len(nomads[gender]) > lim[gender]:
+                random.shuffle(nomads[gender])
                 nomads[gender] = nomads[gender][:lim[gender]]
 
-
+    
+    @staticmethod
+    def dissolution():
+        for _ in range(int(P*DISS_rate)):
+            i = random.randrange(P)
+            for j in range(len(prides[i][Gender.MALE])):
+                prides[i][Gender.MALE][j] = Lion()
+            for j in range(len(prides[i][Gender.FEMALE])):
+                prides[i][Gender.FEMALE][j] = Lion()
 
 
 def run(_prob: Problem):
@@ -313,4 +329,4 @@ def run(_prob: Problem):
         Behaviour.defense()
         Behaviour.migration()
         Behaviour.equilibrium()
-
+        Behaviour.dissolution()

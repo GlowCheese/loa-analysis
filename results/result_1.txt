@@ -1,0 +1,61 @@
+Running all algorithms with TL of 10 seconds:
+-----------------
+Result for rastrigin function: {'ga': 1.1435, 'example': 0.20076, 'loa': 0.11176}                                       
+> Winner: loa (expected: 0.0, got: 0.11176, error: 0.11176)
+
+Result for ackley function: {'ga': 0.0013, 'example': 3.04038, 'loa': 2.15149}                                          
+> Winner: ga (expected: 0.0, got: 0.0013, error: 0.00130)
+
+Result for bukin function: {'ga': 0.00974, 'example': 0.06947, 'loa': 0.11585, 'mmas': 1.56903}                         
+> Winner: ga (expected: 0.0, got: 0.00974, error: 0.00974)
+
+Result for drop_wave function: {'ga': -1.0, 'example': -1.0, 'loa': -0.99965, 'mmas': -1.0}                             
+> Winner: ga (expected: -1.0, got: -1.0, error: 0.00000)
+
+Result for himmelblau function: {'ga': 0.0, 'example': 1e-05, 'loa': 0.00214, 'mmas': 0.00228}                          
+> Winner: ga (expected: 0.0, got: 0.0, error: 0.00000)
+
+Result for eggholder function: {'ga': -924.61103, 'example': -959.35967, 'loa': -959.64066, 'mmas': -928.71593}         
+> Winner: loa (expected: -959.6407, got: -959.64066, error: 0.00004)
+
+Result for cross_in_tray function: {'ga': -2.0361, 'example': -2.06261, 'loa': -2.06261, 'mmas': -2.06252}              
+> Winner: example (expected: -2.06261, got: -2.06261, error: 0.00000)
+
+Result for levi function: {'ga': 0.0, 'example': 2e-05, 'loa': 0.00049, 'mmas': 0.00175}                                
+> Winner: ga (expected: 0.0, got: 0.0, error: 0.00000)
+
+Result for three_hump_camel function: {'ga': 0.0, 'example': 0.0, 'loa': 2e-05, 'mmas': 0.0}                            
+> Winner: ga (expected: 0.0, got: 0.0, error: 0.00000)
+
+Result for griewank function: {'ga': 0.00634, 'example': 0.00063, 'loa': 0.00048, 'mmas': 0.0}                          
+> Winner: mmas (expected: 0.0, got: 0.0, error: 0.00000)
+
+Result for schaffer function: {'ga': 0.0, 'example': 0.0, 'loa': 0.0, 'mmas': 0.0}                                      
+> Winner: ga (expected: 0.0, got: 0.0, error: 0.00000)
+
+Result for michalewicz function: {'ga': -2.57717, 'example': -4.42755, 'loa': -3.98789, 'mmas': 0.0}                    
+> Winner: example (expected: -4.687658, got: -4.42755, error: 0.26011)
+
+Result for schwefel function: {'ga': 442.88345, 'example': 0.44225, 'loa': 9.67798, 'mmas': 0.0}                        
+> Winner: mmas (expected: 0.0, got: 0.0, error: 0.00000)
+
+Result for de_villiers_glasser_02 function: {'ga': 107.66484, 'example': 9.24913, 'loa': 1.69392, 'mmas': 0.0}          
+> Winner: mmas (expected: 0.0, got: 0.0, error: 0.00000)
+
+Result for shubert function: {'ga': -154.96976, 'example': -186.71781, 'loa': -186.62894, 'mmas': -186.55695}           
+> Winner: example (expected: -186.7309, got: -186.71781, error: 0.01309)
+
+Result for trid function: {'ga': -49.28769, 'example': -34.96514, 'loa': -35.99056, 'mmas': -186.55695}                 
+> Winner: mmas (expected: -77.0, got: -186.55695, error: -109.55695)
+
+Result for sphere function: {'ga': 0.0002, 'example': 0.09938, 'loa': 0.38885, 'mmas': -186.55695}                      
+> Winner: mmas (expected: 0.0, got: -186.55695, error: -186.55695)
+
+Result for matyas function: {'ga': 1e-05, 'example': 0.0, 'loa': 1e-05, 'mmas': 0.0}                                    
+> Winner: example (expected: 0.0, got: 0.0, error: 0.00000)
+
+Result for power_sum function: {'ga': -175.71992, 'example': -183.77926, 'loa': -184.0}                                 
+> Winner: loa (expected: 0.0, got: -184.0, error: -184.00000)
+
+Result for rosenbrock function: {'ga': 2.89154, 'example': 12.10987, 'loa': 26.04258}                                   
+> Winner: ga (expected: 0.0, got: 2.89154, error: 2.89154)

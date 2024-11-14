@@ -44,7 +44,7 @@ def run(prob: Problem):
 
     start_time = time.time()
 
-    while int(time.time() - start_time) >= prob.TIME_LIMIT:
+    while int(time.time() - start_time) < prob.TIME_LIMIT:
         fitness_values = [prob.fitness(individual) for individual in population]
         new_population = []
 

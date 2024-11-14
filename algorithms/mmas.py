@@ -49,12 +49,12 @@ def update_pheromone(ants, MaxIter):
             pheromones[ant.degree] += rho * tau_min
 
 
-def selectDegree(ant):
+def selectDegree(ant, EV):
     probabilities = [0.0] * Degrees
     sum_probabilities = 0.0
 
     for i in range(Degrees):
-        heuristic = 1.0 / (1.0 + ant.result)
+        heuristic = 1.0 / (1.0 + ant.result - EV)
         probabilities[i] = (pheromones[i] ** alpha) * (heuristic ** betaa)
         sum_probabilities += probabilities[i]
 
@@ -86,7 +86,7 @@ def run(prob: Problem):
         ants[0].result = prob.fitness(position)
 
         for i in range(1, num_ants):
-            dre = selectDegree(ants[i - 1])
+            dre = selectDegree(ants[i - 1], prob.EV)
 
             ants[i].x += math.cos(dre * math.pi / 180.0) * step_size
             ants[i].y += math.sin(dre * math.pi / 180.0) * step_size
