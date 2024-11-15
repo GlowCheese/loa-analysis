@@ -144,23 +144,35 @@ class Behaviour:
 
 
     @staticmethod
+    def generate_prey(hunters: list[tuple[Lion, str]]) -> list[float]:
+        mn = min(lion[0].cr_fitness for lion in hunters)
+        mx = max(lion[0].cr_fitness for lion in hunters)
+
+        if mn == mx: e = [1] * len(hunters)
+        else: e = [1-(lion[0].cr_fitness-mn)/(mx-mn) for lion in hunters]
+        
+        s = sum(e)
+        return [
+            sum(e[i]*hunters[i][0].position[p] for i in range(len(hunters))) / s
+            for p in range(prob.N_var)
+        ]
+
+
+    @staticmethod
     def hunting_or_fleeing():
         for i in range(P):
             fleers: list[Lion] = []
             hunters: list[tuple[Lion, str]] = []
-            prey: list[float] = [0.0] * prob.N_var
 
             for lion in prides[i][Gender.FEMALE]:
                 if random.random() <= HUNT_rate:
                     wing = random.choice(list(Wing))
                     hunters.append((lion, wing))
-                    for p in range(prob.N_var):
-                        prey[p] += lion.position[p]
                 else:
                     fleers.append(lion)
 
-            if hunters:
-                prey = [p / len(hunters) for p in prey]
+            if len(hunters) >= 2:
+                prey = Behaviour.generate_prey(hunters)
                 Behaviour._hunting(prey, hunters)
 
             if fleers:
