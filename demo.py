@@ -41,7 +41,7 @@ for function_name, (fitness_func, LIMIT, EV) in all_functions.items():
             results.append((round(prob.best_solution[0], 7-l), 7-l))
 
     _best = [output == min(output for output, _ in results) for output, _ in results]
-    sbest = None if sum(_best) == len(results) else [
+    sbest = [None] * len(results) if sum(_best) == len(results) else [
         output == min(output for (output, _), is_best
                       in zip(results, _best) if not is_best) for output, _ in results]
 
