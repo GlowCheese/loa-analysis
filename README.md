@@ -20,5 +20,5 @@ You can fork a repo and:
 
 Finally, just create a [Pull Request](https://github.com/GlowCheese/loa-analysis/pulls) and wait for review. Valid implementation will be followed by running an analysis test.
 
-### Some message from the author:
+### Message from the author:
 _I loves A+ A+ A+ A+_
