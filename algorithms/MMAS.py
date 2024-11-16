@@ -17,7 +17,7 @@ A = 10
 tau_min = 0.1
 tau_max = 10.0
 step_size = 0.3
-Degrees = 360
+Degrees = 361
 
 pheromones = [tau_max] * Degrees
 
@@ -55,8 +55,13 @@ def selectDegree(ant, EV):
     probabilities = [0.0] * Degrees
     sum_probabilities = 0.0
 
+    position = prob.random_solution()
+
     for i in range(Degrees):
-        heuristic = 1.0 / (1.0 + ant.result - EV)
+        position[0] = ant.x + math.cos(i * math.pi / 180.0) * step_size
+        position[1] = ant.y + math.sin(i * math.pi / 180.0) * step_size
+
+        heuristic = 1.0 / (1.0 + prob.fitness(position) - EV)
         probabilities[i] = (pheromones[i] ** alpha) * (heuristic ** betaa)
         sum_probabilities += probabilities[i]
 
@@ -81,19 +86,21 @@ def run(_prob: Problem):
     ants = [Ant() for _ in range(num_ants)]
     best_answer.result = prob.fitness(best_answer.pos())
     
-    while int(time.time() - start_time) < prob.TIME_LIMIT:
-        position = prob.random_solution()
-        MaxIter = Ant()
+    position = prob.random_solution()
+    MaxIter = Ant()
 
-        ants[0].x = position[0]
-        ants[0].y = position[1]
-        ants[0].result = prob.fitness(position)
+    MaxIter.x = position[0]
+    MaxIter.y = position[1]
+    MaxIter.result = prob.fitness(position)
+
+    while int(time.time() - start_time) < prob.TIME_LIMIT:
+        ants[0] = deepcopy(MaxIter)
 
         for i in range(1, num_ants):
             dre = selectDegree(ants[i - 1], prob.EV)
 
-            ants[i].x += math.cos(dre * math.pi / 180.0) * step_size
-            ants[i].y += math.sin(dre * math.pi / 180.0) * step_size
+            ants[i].x = ants[i-1].x + math.cos(dre * math.pi / 180.0) * step_size
+            ants[i].y = ants[i-1].y + math.sin(dre * math.pi / 180.0) * step_size
             ants[i].result = prob.fitness(ants[i].pos())
 
             if ants[i].result < MaxIter.result:

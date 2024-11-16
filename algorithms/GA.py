@@ -35,7 +35,10 @@ def crossover(parent1, parent2, N_var):
 def mutate(individual, LIMIT, MUTA_rate):
     for i in range(len(individual)):
         if random.random() <= MUTA_rate:
-            individual[i] += random.uniform(LIMIT[i][0], LIMIT[i][1]) * 0.1
+            if(random.random() > 0.5 ) :
+                individual[i] += random.uniform(LIMIT[i][0], LIMIT[i][1]) * 0.1
+            else :
+                individual[i] -= random.uniform(LIMIT[i][0], LIMIT[i][1]) * 0.1
             individual[i] = max(LIMIT[i][0], min(LIMIT[i][1], individual[i]))
 
 
