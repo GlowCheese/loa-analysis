@@ -44,7 +44,7 @@ class Problem:
     @_normalize_position
     def fitness(self, pos: list[float]) -> float:
         assert len(pos) == self.N_var
-        res = self.fitness_func(pos)
+        res = self.fitness_func(pos) - self.EV
         if res < self.best_solution[0]:
             end_time = time.time()
             at_mili = int(end_time - self.start_time)

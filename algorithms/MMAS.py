@@ -21,20 +21,22 @@ Degrees = 360
 
 pheromones = [tau_max] * Degrees
 
+prob = None
+
 
 class Ant:
     def __init__(self):
         self.result = INF
-        self.x = 0
-        self.y = 0
+        self.x = prob.random_coor(0)
+        self.y = prob.random_coor(1)
         self.degree = 0
     
     def pos(self) -> list[float]:
         return [self.x, self.y]
 
 
-MaxIter = Ant()
-best_answer = Ant()
+MaxIter: Ant = None
+best_answer: Ant = None
 
 
 
@@ -69,10 +71,12 @@ def selectDegree(ant, EV):
     return Degrees - 1
 
 
-def run(prob: Problem):
-    start_time = time.time()
+def run(_prob: Problem):
+    global prob, MaxIter, best_answer
 
-    global MaxIter, best_answer
+    prob = _prob
+    start_time = time.time()
+    best_answer = Ant()
 
     ants = [Ant() for _ in range(num_ants)]
     best_answer.result = prob.fitness(best_answer.pos())
